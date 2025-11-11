@@ -28,7 +28,7 @@ To access this package under `pkgs.niri-stable`, you should use [`overlays.niri`
 
 The latest commit to the development branch of niri.
 
-Currently, this is exactly commit [`e837e39`](https://github.com/YaLTeR/niri/tree/e837e39623457dc5ad29c34a5ce4d4616e5fbf1e) which was authored on `2025-09-24 05:31:01`.
+Currently, this is exactly commit [`5b77107`](https://github.com/YaLTeR/niri/tree/5b77107161c504376b962107913bf74b575703e7) which was authored on `2025-11-11 17:11:02`.
 
 > [!warning]
 > `niri-unstable` is not a released version, there are no stability guarantees, and it may break your workflow from itme to time.
@@ -325,6 +325,8 @@ For actions that don't take any arguments, just use the corresponding attribute 
 > ```
 
 
+- `λ screenshot :: { show-pointer :: bool }` (only on niri-stable)
+- `λ screenshot-window :: { write-to-disk :: bool }` (only on niri-stable)
 - `λ quit :: { skip-confirmation :: bool }`
 - `suspend`
 - `power-off-monitors`
@@ -335,8 +337,6 @@ For actions that don't take any arguments, just use the corresponding attribute 
 - `λ spawn :: [string]`
 - `λ spawn-sh :: string`
 - `λ do-screen-transition :: { delay-ms? :: u16 }`
-- `λ screenshot :: { show-pointer :: bool }`
-- `λ screenshot-window :: { write-to-disk :: bool }`
 - `toggle-keyboard-shortcuts-inhibit`
 - `close-window`
 - `fullscreen-window`
@@ -433,6 +433,7 @@ For actions that don't take any arguments, just use the corresponding attribute 
 - `switch-preset-window-height`
 - `switch-preset-window-height-back`
 - `maximize-column`
+- `maximize-window-to-edges` (only on niri-unstable)
 - `λ set-column-width :: size-change`
 - `expand-column-to-available-width`
 - `λ switch-layout :: "next" | "prev"`
