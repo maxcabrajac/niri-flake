@@ -28,7 +28,7 @@ To access this package under `pkgs.niri-stable`, you should use [`overlays.niri`
 
 The latest commit to the development branch of niri.
 
-Currently, this is exactly commit [`5b77107`](https://github.com/YaLTeR/niri/tree/5b77107161c504376b962107913bf74b575703e7) which was authored on `2025-11-11 17:11:02`.
+Currently, this is exactly commit [`4d29541`](https://github.com/YaLTeR/niri/tree/4d295418ce8e8e110060396bb485c4f0c381d37e) which was authored on `2025-12-23 09:51:59`.
 
 > [!warning]
 > `niri-unstable` is not a released version, there are no stability guarantees, and it may break your workflow from itme to time.
@@ -269,199 +269,21 @@ For actions taking properties (named arguments), you can pass an attrset.
 {
   programs.niri.settings.binds = {
     "Mod+Shift+E".action.quit.skip-confirmation = true;
+    "Mod+Print".action.screenshot-screen = { show-pointer = false; };
   };
 }
 ```
 
 
-There is also a set of functions available under `config.lib.niri.actions`.
-
-Usage is like so:
+If an action takes properties and positional arguments, you can write it like this:
 
 ```nix
 {
-  programs.niri.settings.binds = with config.lib.niri.actions; {
-    "XF86AudioRaiseVolume".action = spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+";
-    "XF86AudioLowerVolume".action = spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-";
-
-    "Mod+D".action = spawn "fuzzel";
-    "Mod+1".action = focus-workspace 1;
-
-    "Mod+Shift+E".action = quit;
-    "Mod+Ctrl+Shift+E".action = quit { skip-confirmation=true; };
-
-    "Mod+Plus".action = set-column-width "+10%";
-  }
+  programs.niri.settings.binds = {
+    "Mod+Ctrl+1".action.move-window-to-workspace = [ { focus = false; } "chat-apps" ];
+  };
 }
 ```
-
-
-Keep in mind that each one of these attributes (i.e. the nix bindings) are actually identical functions with different node names, and they can take arbitrarily many arguments. The documentation here is based on the *real* acceptable arguments for these actions, but the nix bindings do not enforce this. If you pass the wrong arguments, niri will reject the config file, but evaluation will proceed without problems.
-
-For actions that don't take any arguments, just use the corresponding attribute from `config.lib.niri.actions`. They are listed as `action-name`. For actions that *do* take arguments, they are notated like so: `λ action-name :: <args>`, to clarify that they "should" be used as functions. Hopefully, `<args>` will be clear enough in most cases, but it's worth noting some nontrivial kinds of arguments:
-
-- `size-change`: This is a special argument type used for some actions by niri. It's a string. \
-  It can take either a fixed size as an integer number of logical pixels (`"480"`, `"1200"`) or a proportion of your screen as a percentage (`"30%"`, `"70%"`) \
-  Additionally, it can either be an absolute change (setting the new size of the window), or a relative change (adding or subtracting from its size). \
-  Relative size changes are written with a `+`/`-` prefix, and absolute size changes have no prefix.
-- `{ field :: type }`: This means that the action takes a named argument (in kdl, we call it a property). \
-  To pass such an argument, you should pass an attrset with the key and value. You can pass many properties in one attrset, or you can pass several attrsets with different properties. \
-  Required fields are marked with `*` before their name, and if no fields are required, you can use the action without any arguments too (see `quit` in the example above). \
-  If a field is marked with `?`, then omitting it is meaningful. (without `?`, it will have a default value)
-- `[type]`: This means that the action takes several arguments as a list. Although you can pass a list directly, it's more common to pass them as separate arguments. \
-  `spawn ["foo" "bar" "baz"]` is equivalent to `spawn "foo" "bar" "baz"`.
-
-
-> [!tip]
-> You can use partial application to create a spawn command with full support for shell syntax:
-> ```nix
-> {
->   programs.niri.settings.binds = with config.lib.niri.actions; let
->     sh = spawn "sh" "-c";
->   in {
->     "Print".action = sh ''grim -g "$(slurp)" - | wl-copy'';
->   };
-> }
-> ```
-
-
-- `λ screenshot :: { show-pointer :: bool }` (only on niri-stable)
-- `λ screenshot-window :: { write-to-disk :: bool }` (only on niri-stable)
-- `λ quit :: { skip-confirmation :: bool }`
-- `suspend`
-- `power-off-monitors`
-- `power-on-monitors`
-- `toggle-debug-tint`
-- `debug-toggle-opaque-regions`
-- `debug-toggle-damage`
-- `λ spawn :: [string]`
-- `λ spawn-sh :: string`
-- `λ do-screen-transition :: { delay-ms? :: u16 }`
-- `toggle-keyboard-shortcuts-inhibit`
-- `close-window`
-- `fullscreen-window`
-- `toggle-windowed-fullscreen`
-- `λ focus-window-in-column :: u8`
-- `focus-window-previous`
-- `focus-column-left`
-- `focus-column-right`
-- `focus-column-first`
-- `focus-column-last`
-- `focus-column-right-or-first`
-- `focus-column-left-or-last`
-- `λ focus-column :: usize`
-- `focus-window-or-monitor-up`
-- `focus-window-or-monitor-down`
-- `focus-column-or-monitor-left`
-- `focus-column-or-monitor-right`
-- `focus-window-down`
-- `focus-window-up`
-- `focus-window-down-or-column-left`
-- `focus-window-down-or-column-right`
-- `focus-window-up-or-column-left`
-- `focus-window-up-or-column-right`
-- `focus-window-or-workspace-down`
-- `focus-window-or-workspace-up`
-- `focus-window-top`
-- `focus-window-bottom`
-- `focus-window-down-or-top`
-- `focus-window-up-or-bottom`
-- `move-column-left`
-- `move-column-right`
-- `move-column-to-first`
-- `move-column-to-last`
-- `move-column-left-or-to-monitor-left`
-- `move-column-right-or-to-monitor-right`
-- `λ move-column-to-index :: usize`
-- `move-window-down`
-- `move-window-up`
-- `move-window-down-or-to-workspace-down`
-- `move-window-up-or-to-workspace-up`
-- `consume-or-expel-window-left`
-- `consume-or-expel-window-right`
-- `consume-window-into-column`
-- `expel-window-from-column`
-- `swap-window-left`
-- `swap-window-right`
-- `toggle-column-tabbed-display`
-- `λ set-column-display :: string`
-- `center-column`
-- `center-window`
-- `center-visible-columns`
-- `focus-workspace-down`
-- `focus-workspace-up`
-- `λ focus-workspace :: u8 | string`
-- `focus-workspace-previous`
-- `λ move-window-to-workspace-down :: { focus :: bool }`
-- `λ move-window-to-workspace-up :: { focus :: bool }`
-- `λ move-column-to-workspace-down :: { focus :: bool }`
-- `λ move-column-to-workspace-up :: { focus :: bool }`
-- `move-workspace-down`
-- `move-workspace-up`
-- `λ move-workspace-to-index :: usize`
-- `λ move-workspace-to-monitor :: string`
-- `λ set-workspace-name :: string`
-- `unset-workspace-name`
-- `focus-monitor-left`
-- `focus-monitor-right`
-- `focus-monitor-down`
-- `focus-monitor-up`
-- `focus-monitor-previous`
-- `focus-monitor-next`
-- `λ focus-monitor :: string`
-- `move-window-to-monitor-left`
-- `move-window-to-monitor-right`
-- `move-window-to-monitor-down`
-- `move-window-to-monitor-up`
-- `move-window-to-monitor-previous`
-- `move-window-to-monitor-next`
-- `λ move-window-to-monitor :: string`
-- `move-column-to-monitor-left`
-- `move-column-to-monitor-right`
-- `move-column-to-monitor-down`
-- `move-column-to-monitor-up`
-- `move-column-to-monitor-previous`
-- `move-column-to-monitor-next`
-- `λ move-column-to-monitor :: string`
-- `λ set-window-width :: size-change`
-- `λ set-window-height :: size-change`
-- `reset-window-height`
-- `switch-preset-column-width`
-- `switch-preset-column-width-back`
-- `switch-preset-window-width`
-- `switch-preset-window-width-back`
-- `switch-preset-window-height`
-- `switch-preset-window-height-back`
-- `maximize-column`
-- `maximize-window-to-edges` (only on niri-unstable)
-- `λ set-column-width :: size-change`
-- `expand-column-to-available-width`
-- `λ switch-layout :: "next" | "prev"`
-- `show-hotkey-overlay`
-- `move-workspace-to-monitor-left`
-- `move-workspace-to-monitor-right`
-- `move-workspace-to-monitor-down`
-- `move-workspace-to-monitor-up`
-- `move-workspace-to-monitor-previous`
-- `move-workspace-to-monitor-next`
-- `toggle-window-floating`
-- `move-window-to-floating`
-- `move-window-to-tiling`
-- `focus-floating`
-- `focus-tiling`
-- `switch-focus-between-floating-and-tiling`
-- `toggle-window-rule-opacity`
-- `set-dynamic-cast-window`
-- `λ set-dynamic-cast-monitor :: unknown`
-  
-    The code that generates this documentation does not know how to parse the definition:
-    ```rs
-    SetDynamicCastMonitor(#[knuffel(argument)] Option<String>)
-    ```
-- `clear-dynamic-cast-target`
-- `toggle-overview`
-- `open-overview`
-- `close-overview`
 
 
 
@@ -497,7 +319,7 @@ This is mostly useful for binds on the mouse wheel, where you might not want to 
 
 
 ## `programs.niri.settings.binds.<name>.hotkey-overlay`
-- type: `attribute-tagged union`
+- type: `attribute-tagged union with choices: hidden, title`
 - default:
   ```nix
   {
@@ -641,7 +463,7 @@ Whether to prefer server-side decorations (SSD) over client-side decorations (CS
 
 
 ## `programs.niri.settings.spawn-at-startup`
-- type: `list of attribute-tagged union`
+- type: `list of attribute-tagged union with choices: argv, command, sh`
 
 A list of commands to run when niri starts.
 
@@ -1846,7 +1668,7 @@ The color of the insert hint.
 
 
 ## `<decoration>`
-- type: `attribute-tagged union`
+- type: `attribute-tagged union with choices: color, gradient`
 
 A decoration is drawn around a surface, adding additional elements that are not necessarily part of an application, but are part of what we think of as a "window".
 
@@ -1942,7 +1764,7 @@ The default background color that niri draws for workspaces. This is visible whe
 
 
 ## `programs.niri.settings.layout.preset-column-widths`
-- type: `list of attribute-tagged union`
+- type: `list of attribute-tagged union with choices: fixed, proportion`
 
 The widths that `switch-preset-column-width` will cycle through.
 
@@ -1977,7 +1799,7 @@ The width of the column as a proportion of the screen's width
 
 
 ## `programs.niri.settings.layout.preset-window-heights`
-- type: `list of attribute-tagged union`
+- type: `list of attribute-tagged union with choices: fixed, proportion`
 
 The heights that `switch-preset-window-height` will cycle through.
 
@@ -2046,7 +1868,7 @@ Also, since a newly created column always contains a single window, you can over
 
 
 ## `programs.niri.settings.layout.default-column-width`
-- type: `{} or attribute-tagged union`
+- type: `{} or attribute-tagged union with choices: fixed, proportion`
 
 The default width for new columns.
 
@@ -2354,7 +2176,7 @@ See: https://github.com/YaLTeR/niri/wiki/Configuration:-Animations#custom-shader
 
 
 ## `<animation-kind>`
-- type: `attribute-tagged union`
+- type: `attribute-tagged union with choices: easing, spring`
 
 
 <!-- <animation-kind>.easing -->
@@ -2703,7 +2525,7 @@ If the final value of this field is null, then the default display mode is taken
 
 
 ## `programs.niri.settings.window-rules.*.default-column-width`
-- type: `null or {} or attribute-tagged union`
+- type: `null or {} or attribute-tagged union with choices: fixed, proportion`
 - default: `null`
 
 The default width for new columns.
@@ -2729,7 +2551,7 @@ The width of the column as a proportion of the screen's width
 
 
 ## `programs.niri.settings.window-rules.*.default-window-height`
-- type: `null or {} or attribute-tagged union`
+- type: `null or {} or attribute-tagged union with choices: fixed, proportion`
 - default: `null`
 
 The default height for new floating windows.
