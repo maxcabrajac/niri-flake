@@ -23,7 +23,7 @@ in
           modules = [ ./settings/toplevel.nix ];
           specialArgs = {
             inherit kdl;
-            niri-flake-internal-fmt = fmt;
+            niri-flake-internal-fmt = fmt.gfm.fmt;
           };
         }
       );
@@ -33,7 +33,7 @@ in
 
         By default, when this is null, no config file is generated.
 
-        Beware that setting ${fmt.link-opt options.programs.niri.config} completely overrides everything under this option.
+        Beware that setting ${fmt.xml.fmt.link-opt options.programs.niri.config} completely overrides everything under this option.
       '';
     };
 
@@ -48,7 +48,7 @@ in
         - When this is a string, it is assumed to be the config file contents.
         - When this is kdl document, it is serialized to a string before being used as the config file contents.
 
-        By default, this is a KDL document that reflects the settings in ${fmt.link-opt options.programs.niri.settings}.
+        By default, this is a KDL document that reflects the settings in ${fmt.xml.fmt.link-opt options.programs.niri.settings}.
       '';
     };
 
@@ -75,7 +75,7 @@ in
       description = ''
         The final niri config file contents.
 
-        This is a string that reflects the document stored in ${fmt.link-opt options.programs.niri.config}.
+        This is a string that reflects the document stored in ${fmt.xml.fmt.link-opt options.programs.niri.config}.
 
         It is exposed mainly for debugging purposes, such as when you need to inspect how a certain option affects the resulting config file.
       '';
